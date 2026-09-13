@@ -12,6 +12,7 @@ interface Props {
   onPlayCard: (card: Card) => void
   onPlayHiddenCard: () => void
   onContinueAfterRound: () => void
+  onLeave: () => void
 }
 
 export default function GameTable({
@@ -21,6 +22,7 @@ export default function GameTable({
   onPlayCard,
   onPlayHiddenCard,
   onContinueAfterRound,
+  onLeave,
 }: Props) {
   const [showSheet, setShowSheet] = useState(false)
 
@@ -28,16 +30,31 @@ export default function GameTable({
   const isMyTurn = state.currentTurnPlayerId === state.myId
   const isHost = state.myId === state.hostId
 
+  function handleLeaveClick() {
+    if (window.confirm('Sigur vrei să ieși din meci? Vei pierde progresul acestei partide.')) {
+      onLeave()
+    }
+  }
+
   return (
     <div className="flex min-h-screen flex-col pb-4">
-      {/* Top bar */}
-      <header className="flex items-center justify-between border-b border-felt-700 px-4 py-2">
+      {/* Top bar — împinsă în jos cu o valoare fixă (plus spațiul notch-ului, dacă există),
+          ca să nu mai stea lipită de bara de status a telefonului */}
+      <header
+        className="flex items-center justify-between gap-2 border-b border-felt-700 px-4 pb-2"
+        style={{ paddingTop: 'calc(env(safe-area-inset-top, 0px) + 1.75rem)' }}
+      >
         <p className="text-xs text-paper/50">
           Runda {state.round}/14 · mâna {Math.min(state.trickNumber, state.cardsThisRound)}/{state.cardsThisRound}
         </p>
-        <button onClick={() => setShowSheet(true)} className="rounded-md border border-felt-600 px-2 py-1 text-xs text-paper">
-          Scor
-        </button>
+        <div className="flex shrink-0 items-center gap-2">
+          <button onClick={() => setShowSheet(true)} className="rounded-md border border-felt-600 px-2 py-1 text-xs text-paper">
+            Scor
+          </button>
+          <button onClick={handleLeaveClick} className="rounded-md border border-bad/60 px-2 py-1 text-xs text-bad">
+            Ieșire
+          </button>
+        </div>
       </header>
 
       {/* Masa rotundă, cu jucătorii în jur */}
@@ -121,7 +138,7 @@ export default function GameTable({
         !state.hiddenCardPending &&
         state.phase !== 'ROUND_RESULT' &&
         state.phase !== 'FINAL_RESULT' && (
-          <div className="mt-auto px-3 pt-2">
+          <div className="mt-3 px-3 pt-2">
             <p className="mb-1 text-center text-xs text-paper/40">
               Cărțile mele
               {state.round === 14 && state.myHand.length > 0 ? ' (te-ai uitat la carte)' : ''}
